@@ -1,21 +1,23 @@
-#[derive(Debug)]
-pub struct TokenStream(Vec<Token>);
+#[derive(Debug, PartialEq, Eq)]
+pub struct TokenStream(pub Vec<Token>);
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq
+    )]
 pub enum Token {
     Bracket(Bracket),
     Operator(Operator),
     Predicate(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Operator {
     And,
     Or,
     Not,
+    Implies,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Bracket {
     Open,
     Close,
