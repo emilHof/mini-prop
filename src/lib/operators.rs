@@ -27,17 +27,17 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
                                 *i += 1;
                                 return Ok(Proposition::Predicate(A.clone()));
                             },
-                            stream::Token::Operator(Op) => {
+                            stream::Token::Operator(op) => {
                                 *i += 1;
                                 return match op {
                                     stream::Operator::And => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::And(Proposition::Predicate(A.clone()), parse_prop(i, stream)?))))
+                                        Ok(Proposition::Composition(Box::new(Operator::And(Proposition::Predicate(A.clone()), parse_prop(i, stream)?))))
                                     },
                                     stream::Operator::Or => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::Or(Proposition::Predicate(A.clone()), parse_prop(i, stream)?))))
+                                        Ok(Proposition::Composition(Box::new(Operator::Or(Proposition::Predicate(A.clone()), parse_prop(i, stream)?))))
                                     },
                                     stream::Operator::Implies => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::Implies(Proposition::Predicate(A.clone()), parse_prop(i, stream)?))))
+                                        Ok(Proposition::Composition(Box::new(Operator::Implies(Proposition::Predicate(A.clone()), parse_prop(i, stream)?))))
                                     },
                                     stream::Operator::Not => {
                                         Err(ParseError)
@@ -65,13 +65,13 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
                                 *i += 1;
                                 return match op {
                                     stream::Operator::And => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::And(prop, parse_prop(i, stream)?))))
+                                        Ok(Proposition::Composition(Box::new(Operator::And(prop, parse_prop(i, stream)?))))
                                     },
                                     stream::Operator::Or => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::Or(prop, parse_prop(i, stream)?))))
+                                        Ok(Proposition::Composition(Box::new(Operator::Or(prop, parse_prop(i, stream)?))))
                                     },
                                     stream::Operator::Implies => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::Implies(prop, parse_prop(i, stream)?))))
+                                        Ok(Proposition::Composition(Box::new(Operator::Implies(prop, parse_prop(i, stream)?))))
                                     },
                                     stream::Operator::Not => {
                                         Err(ParseError)
@@ -86,7 +86,8 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
                 },
                 stream::Token::Operator(stream::Operator::Not) => {
                     *i += 1;
-                    return Ok(parse_prop(i, stream)?);
+                    println!("found not!");
+                    return Ok(Proposition::Composition(Box::new(Operator::Not(parse_prop(i, stream)?))));
                 },
                 _ => Err(ParseError)
             } 
@@ -103,7 +104,7 @@ pub struct ParseError;
 pub enum Proposition {
     Condition(Condition),
     Predicate(String),
-    Compostion(Box<Operator>),
+    Composition(Box<Operator>),
 }
 
 #[derive(Debug)]
@@ -118,15 +119,15 @@ mod test_operators {
 
     #[test]
     fn test_composition() {
-        let comp = Proposition::Compostion(Box::new(Operator::And(Proposition::Predicate("A".to_string()), Proposition::Predicate("B".to_string()))));        
+        let comp = Proposition::Composition(Box::new(Operator::And(Proposition::Predicate("A".to_string()), Proposition::Predicate("B".to_string()))));        
         println!("{:?}", comp);
     }
 
     #[test]
     fn test_complex_compostion() {
-        let comp = Proposition::Compostion(Box::new(Operator::And(
+        let comp = Proposition::Composition(Box::new(Operator::And(
                     Proposition::Predicate("C".to_string()),
-                    Proposition::Compostion(Box::new(Operator::Or(
+                    Proposition::Composition(Box::new(Operator::Or(
                                 Proposition::Predicate("A".to_string()),
                                 Proposition::Predicate("B".to_string())
                                 )))
@@ -138,7 +139,15 @@ mod test_operators {
     #[test]
     fn test_parsing() {
         use stream::{Token, Bracket};
-        let stream = stream::TokenStream(vec![Token::Predicate("A".to_string()), Token::Operator(stream::Operator::And), Token::Predicate("B".to_string())]);
+        let stream = stream::TokenStream(vec![
+            Token::Predicate("A".to_string()), 
+            Token::Operator(stream::Operator::And), 
+            Token::Bracket(Bracket::Open),
+            Token::Predicate("B".to_string()),
+            Token::Operator(stream::Operator::Or),
+            Token::Predicate("C".to_string()),
+            Token::Bracket(Bracket::Close),
+        ]);
         let comp: Proposition = stream.try_into().ok().unwrap();
         println!("{:?}", comp)
     }
