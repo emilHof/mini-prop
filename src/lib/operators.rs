@@ -27,7 +27,7 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
                                 *i += 1;
                                 return Ok(Proposition::Predicate(A.clone()));
                             },
-                            stream::Token::Operator(Op) => {
+                            stream::Token::Operator(op) => {
                                 *i += 1;
                                 return match op {
                                     stream::Operator::And => {

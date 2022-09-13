@@ -23,38 +23,31 @@ pub enum Bracket {
     Close,
 }
 
+fn match_buf(buf: &mut Vec<char>, res: &mut Vec<Token>) {
+    if buf.len() > 0 {
+        match buf.clone().into_iter().collect::<String>().as_str() {
+            "land" => res.push(Token::Operator(Operator::And)),
+            "lor" => res.push(Token::Operator(Operator::Or)),
+            "not" => res.push(Token::Operator(Operator::Not)),
+            "implies" => res.push(Token::Operator(Operator::Implies)),
+            a => res.push(Token::Predicate(a.to_string())),
+        }
+    }
+}
+
 impl TryInto<TokenStream> for String {
     type Error = String;
 
     fn try_into(self) -> Result<TokenStream, Self::Error> {
         let mut buf: Vec<char> = vec![];
         let mut res = vec![];
+
         self.chars().for_each(|c| {
             if c == ' ' || c == '\\' {
-                if buf.len() > 0 {
-                    match buf.clone().into_iter().collect::<String>().as_str() {
-                        "land" => {
-                            res.push(Token::Operator(Operator::And));
-                        },
-                        "lor" => {
-                            res.push(Token::Operator(Operator::Or));
-                        },
-                        a => res.push(Token::Predicate(a.to_string()))
-                    }
-                }
+                match_buf(&mut buf, &mut res);
                 buf = vec![];
             } else if c == ')' {
-                if buf.len() > 0 {
-                    match buf.clone().into_iter().collect::<String>().as_str() {
-                        "land" => {
-                            res.push(Token::Operator(Operator::And));
-                        },
-                        "lor" => {
-                            res.push(Token::Operator(Operator::Or));
-                        },
-                        a => res.push(Token::Predicate(a.to_string()))
-                    }
-                }
+                match_buf(&mut buf, &mut res);
                 res.push(Token::Bracket(Bracket::Close));
                 buf = vec![];
             } else if c == '(' {
@@ -64,6 +57,8 @@ impl TryInto<TokenStream> for String {
                 buf.push(c);
             }
         });
+
+        match_buf(&mut buf, &mut res);
 
         Ok(TokenStream(res))
     }
