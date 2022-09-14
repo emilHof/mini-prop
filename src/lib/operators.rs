@@ -16,84 +16,81 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
             return Err(ParseError)
         }
         
-        fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
-            let mut first = *i;
-            match &stream.0[first] {
-                stream::Token::Predicate(A) => {
-                    *i += 1;
-                    if first + 1 < stream.0.len() {
-                        match &stream.0[first + 1] {
-                            stream::Token::Bracket(stream::Bracket::Close) => {
-                                *i += 1;
-                                return Ok(Proposition::Predicate(A.clone()));
-                            },
-                            stream::Token::Operator(op) => {
-                                *i += 1;
-                                return match op {
-                                    stream::Operator::And => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::And(Proposition::Predicate(A.clone()), parse_prop(i, stream)?))))
-                                    },
-                                    stream::Operator::Or => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::Or(Proposition::Predicate(A.clone()), parse_prop(i, stream)?))))
-                                    },
-                                    stream::Operator::Implies => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::Implies(Proposition::Predicate(A.clone()), parse_prop(i, stream)?))))
-                                    },
-                                    stream::Operator::Not => {
-                                        Err(ParseError)
-                                    }
-                                }
-                            },
-                            _ => Err(ParseError)
-                        }
-                    } else {
-                        return Ok(Proposition::Predicate(A.clone()))
-                    }
-                },
-                stream::Token::Bracket(stream::Bracket::Open) => {
-                    *i += 1;
-                    let prop = parse_prop(i, stream)?;
-                    first = *i;
-
-                    if first + 1 < stream.0.len() {
-                        match &stream.0[first] {
-                            stream::Token::Bracket(stream::Bracket::Close) => {
-                                *i += 1;
-                                return Ok(prop);
-                            },
-                            stream::Token::Operator(op) => {
-                                *i += 1;
-                                return match op {
-                                    stream::Operator::And => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::And(prop, parse_prop(i, stream)?))))
-                                    },
-                                    stream::Operator::Or => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::Or(prop, parse_prop(i, stream)?))))
-                                    },
-                                    stream::Operator::Implies => {
-                                        Ok(Proposition::Compostion(Box::new(Operator::Implies(prop, parse_prop(i, stream)?))))
-                                    },
-                                    stream::Operator::Not => {
-                                        Err(ParseError)
-                                    }
-                                }
-                            },
-                            _ => Err(ParseError)
-                        }
-                    } else {
-                        return Ok(prop)
-                    }
-                },
-                stream::Token::Operator(stream::Operator::Not) => {
-                    *i += 1;
-                    return Ok(parse_prop(i, stream)?);
-                },
-                _ => Err(ParseError)
-            } 
-        }
         let mut i = 0;
         
         parse_prop(&mut i, &self)
+    }
+}
+
+
+fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
+    let mut first = *i;
+    match &stream.0[first] {
+        stream::Token::Predicate(A) => {
+            *i += 1;
+            if first + 1 < stream.0.len() {
+                match &stream.0[first + 1] {
+                    stream::Token::Bracket(stream::Bracket::Close) => {
+                        *i += 1;
+                        return Ok(Proposition::Predicate(A.clone()));
+                    },
+                    stream::Token::Operator(op) => {
+                        *i += 1;
+                        return match_op(op, i, stream, Proposition::Predicate(A.clone()));
+                    },
+                    _ => Err(ParseError)
+                }
+            } else {
+                return Ok(Proposition::Predicate(A.clone()))
+            }
+        },
+        stream::Token::Bracket(stream::Bracket::Open) => {
+            *i += 1;
+            let prop = parse_prop(i, stream)?;
+            first = *i;
+
+            if first + 1 < stream.0.len() {
+                match_op_prop(*i, i, stream, prop)
+            } else {
+                return Ok(prop)
+            }
+        },
+        stream::Token::Operator(stream::Operator::Not) => {
+            *i += 1;
+            return Ok(parse_prop(i, stream)?);
+        },
+        _ => Err(ParseError)
+    } 
+}
+
+pub fn match_op_prop(first: usize, i: &mut usize, stream: &stream::TokenStream, prop: Proposition) -> Result<Proposition, ParseError> {
+    match &stream.0[first] {
+        stream::Token::Bracket(stream::Bracket::Close) => {
+            *i += 1;
+            return Ok(prop);
+        },
+        stream::Token::Operator(op) => {
+            *i += 1;
+            match_op(op, i, stream, prop)
+        },
+        _ => Err(ParseError)
+    }
+}
+
+pub fn match_op(op: &stream::Operator, i: &mut usize, stream: &stream::TokenStream, prop: Proposition) -> Result<Proposition, ParseError> { 
+    match op {
+        stream::Operator::And => {
+            Ok(Proposition::Compostion(Box::new(Operator::And(prop, parse_prop(i, stream)?))))
+        },
+        stream::Operator::Or => {
+            Ok(Proposition::Compostion(Box::new(Operator::Or(prop, parse_prop(i, stream)?))))
+        },
+        stream::Operator::Implies => {
+            Ok(Proposition::Compostion(Box::new(Operator::Implies(prop, parse_prop(i, stream)?))))
+        },
+        stream::Operator::Not => {
+            Err(ParseError)
+        }
     }
 }
 
