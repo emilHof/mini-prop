@@ -57,7 +57,7 @@ fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition
         },
         stream::Token::Operator(stream::Operator::Not) => {
             *i += 1;
-            return Ok(Proposition::Composition(Box::new(Operator::Not(parse_prop(i, stream)?))));
+            return Ok(parse_prop(i, stream)?);
         },
         _ => Err(ParseError)
     } 
