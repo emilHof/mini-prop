@@ -76,4 +76,13 @@ mod test {
 
         println!("{:?}", sut);
     }
+
+    #[test]
+    fn test_stream_from_complex() {
+        let input = "A \\lor ((B \\land C) \\lor (D \\land \\not A))".to_string();
+
+        let sut: TokenStream = input.try_into().ok().unwrap(); 
+
+        println!("{:?}", sut);
+    }
 }

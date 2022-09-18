@@ -1,4 +1,8 @@
-use std::{fs, str::Chars};
+use std::fs;
+use mini_prop_lib::{
+    stream,
+    operators,
+};
 
 fn read_as_string(filepath: &str) -> Result<String, Box<dyn std::error::Error>> {
     let data = fs::read_to_string(filepath)?;
@@ -17,7 +21,7 @@ fn read_file_line_by_line(filepath: &str) -> Result<std::io::BufReader<std::fs::
 fn main() {
     let formula = read_as_string("test.txt").unwrap();
     println!("{}", formula);
-    let stream: mini_prop_lib::stream::TokenStream = formula.try_into().ok().unwrap();
+    let stream: stream::TokenStream = formula.try_into().ok().unwrap();
     println!("{:?}", stream);
 }
 

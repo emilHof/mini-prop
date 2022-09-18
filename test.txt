@@ -1,1 +1,1 @@
-(A \land B)
+A \lor ((B \land C) \lor (D \land \not A))
