@@ -28,7 +28,7 @@ fn match_buf(buf: &mut Vec<char>, res: &mut Vec<Token>) {
         match buf.clone().into_iter().collect::<String>().as_str() {
             "land" => res.push(Token::Operator(Operator::And)),
             "lor" => res.push(Token::Operator(Operator::Or)),
-            "not" => res.push(Token::Operator(Operator::Not)),
+            "neg" => res.push(Token::Operator(Operator::Not)),
             "implies" => res.push(Token::Operator(Operator::Implies)),
             a => res.push(Token::Predicate(a.to_string())),
         }
