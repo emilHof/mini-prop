@@ -1,11 +1,26 @@
 use crate::stream;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Operator {
     And(Proposition, Proposition),
     Or(Proposition, Proposition),
     Implies(Proposition, Proposition),
     Not(Proposition),
+}
+
+pub struct ParseError;
+
+#[derive(Debug, PartialEq)]
+pub enum Proposition {
+    Condition(Condition),
+    Predicate(String),
+    Composition(Box<Operator>),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Condition {
+    True,
+    False,
 }
 
 impl TryInto<Proposition> for crate::stream::TokenStream {
@@ -26,22 +41,22 @@ impl TryInto<Proposition> for crate::stream::TokenStream {
 fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
     let mut first = *i;
     match &stream.0[first] {
-        stream::Token::Predicate(A) => {
+        stream::Token::Predicate(pred) => {
             *i += 1;
             if first + 1 < stream.0.len() {
                 match &stream.0[first + 1] {
                     stream::Token::Bracket(stream::Bracket::Close) => {
                         *i += 1;
-                        return Ok(Proposition::Predicate(A.clone()));
+                        return Ok(Proposition::Predicate(pred.clone()));
                     },
                     stream::Token::Operator(op) => {
                         *i += 1;
-                        return match_op(op, i, stream, Proposition::Predicate(A.clone()));
+                        return match_op(op, i, stream, Proposition::Predicate(pred.clone()));
                     },
                     _ => Err(ParseError)
                 }
             } else {
-                return Ok(Proposition::Predicate(A.clone()))
+                return Ok(Proposition::Predicate(pred.clone()))
             }
         },
         stream::Token::Bracket(stream::Bracket::Open) => {
@@ -57,10 +72,34 @@ fn parse_prop(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition
         },
         stream::Token::Operator(stream::Operator::Not) => {
             *i += 1;
-            return Ok(parse_prop(i, stream)?);
+            handle_not(i, stream)
         },
         _ => Err(ParseError)
     } 
+}
+
+pub fn handle_not(i: &mut usize, stream: &stream::TokenStream) -> Result<Proposition, ParseError> {
+    let mut first = *i;
+    if first < stream.0.len() {
+
+        let prop = match &stream.0[first] {
+            stream::Token::Predicate(pred) => { *i += 1; Ok(Proposition::Composition(Box::new(Operator::Not(Proposition::Predicate(pred.clone()))))) },
+            stream::Token::Bracket(stream::Bracket::Open) => {
+                *i += 1;
+                Ok(Proposition::Composition(Box::new(Operator::Not(parse_prop(i, stream)?))))
+            },
+            _ => Err(ParseError)
+        }?;
+        first = *i;
+
+        if first + 1 < stream.0.len() {
+            match_op_prop(*i, i, stream, prop)
+        } else {
+            return Ok(prop)
+        }
+    } else {
+        Err(ParseError)
+    }
 }
 
 pub fn match_op_prop(first: usize, i: &mut usize, stream: &stream::TokenStream, prop: Proposition) -> Result<Proposition, ParseError> {
@@ -80,33 +119,18 @@ pub fn match_op_prop(first: usize, i: &mut usize, stream: &stream::TokenStream, 
 pub fn match_op(op: &stream::Operator, i: &mut usize, stream: &stream::TokenStream, prop: Proposition) -> Result<Proposition, ParseError> { 
     match op {
         stream::Operator::And => {
-            Ok(Proposition::Compostion(Box::new(Operator::And(prop, parse_prop(i, stream)?))))
+            Ok(Proposition::Composition(Box::new(Operator::And(prop, parse_prop(i, stream)?))))
         },
         stream::Operator::Or => {
-            Ok(Proposition::Compostion(Box::new(Operator::Or(prop, parse_prop(i, stream)?))))
+            Ok(Proposition::Composition(Box::new(Operator::Or(prop, parse_prop(i, stream)?))))
         },
         stream::Operator::Implies => {
-            Ok(Proposition::Compostion(Box::new(Operator::Implies(prop, parse_prop(i, stream)?))))
+            Ok(Proposition::Composition(Box::new(Operator::Implies(prop, parse_prop(i, stream)?))))
         },
         stream::Operator::Not => {
             Err(ParseError)
         }
     }
-}
-
-pub struct ParseError;
-
-#[derive(Debug)]
-pub enum Proposition {
-    Condition(Condition),
-    Predicate(String),
-    Composition(Box<Operator>),
-}
-
-#[derive(Debug)]
-pub enum Condition {
-    True,
-    False,
 }
 
 #[cfg(test)]
@@ -134,16 +158,8 @@ mod test_operators {
 
     #[test]
     fn test_parsing() {
-        use stream::{Token, Bracket};
-        let stream = stream::TokenStream(vec![
-            Token::Predicate("A".to_string()), 
-            Token::Operator(stream::Operator::And), 
-            Token::Bracket(Bracket::Open),
-            Token::Predicate("B".to_string()),
-            Token::Operator(stream::Operator::Or),
-            Token::Predicate("C".to_string()),
-            Token::Bracket(Bracket::Close),
-        ]);
+        use stream::{Token};
+        let stream = stream::TokenStream(vec![Token::Predicate("A".to_string()), Token::Operator(stream::Operator::And), Token::Predicate("B".to_string())]);
         let comp: Proposition = stream.try_into().ok().unwrap();
         println!("{:?}", comp)
     }
