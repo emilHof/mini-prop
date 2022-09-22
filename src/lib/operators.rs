@@ -133,6 +133,31 @@ pub fn match_op(op: &stream::Operator, i: &mut usize, stream: &stream::TokenStre
     }
 }
 
+impl std::fmt::Display for Proposition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Proposition::Predicate(pred) => write!(f, "{}", pred),
+            Proposition::Condition(cond) => match cond {
+                Condition::True => write!(f, "T"),
+                Condition::False => write!(f, "F"),
+            },
+            Proposition::Composition(comp) => match comp.as_ref() {
+                Operator::And(a, b) => write!(f, "({} \\land {})", a, b),
+                Operator::Or(a, b) => write!(f, "({} \\lor {})", a, b),
+                Operator::Implies(a, b) => write!(f, "({} \\implies {})", a, b),
+               Operator::Not(a) => write!(f, "(\\neg {})", a),            
+            }
+        }
+    }
+}
+
+impl Into<String> for Proposition {
+    fn into(self) -> String {
+        format!("{}", self)
+    }
+}
+
+
 #[cfg(test)]
 mod test_operators {
     use super::*;
@@ -152,7 +177,8 @@ mod test_operators {
                                 Proposition::Predicate("B".to_string())
                                 )))
                     )));        
-        println!("{:?}", comp)
+        println!("{:?}", comp);
+        println!("{}", comp);
     }
 
 

@@ -50,6 +50,11 @@ mod test_procs {
             )))
         ];
 
-        input.into_iter().zip(expected.into_iter()).for_each(|(actual, expected)| assert_eq!(expected, demorg(actual)));
+        input.into_iter().zip(expected.into_iter()).for_each( |(actual, expected)| {
+                let actual = demorg(actual);
+                println!("{:?}, {:?}", expected, actual);
+                assert_eq!(expected, actual)
+            }
+        );
     }
 }
