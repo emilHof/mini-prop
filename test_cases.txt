@@ -1,3 +1,4 @@
 \neg (A \land B)
 \neg (A) \land B
 \neg A \land B
+\neg ((A \land \neg B) \lor (B \land (C \land \neg A)))

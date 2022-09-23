@@ -8,6 +8,7 @@ pub enum Operator {
     Not(Proposition),
 }
 
+#[derive(Debug)]
 pub struct ParseError;
 
 #[derive(Debug, PartialEq)]
@@ -145,7 +146,7 @@ impl std::fmt::Display for Proposition {
                 Operator::And(a, b) => write!(f, "({} \\land {})", a, b),
                 Operator::Or(a, b) => write!(f, "({} \\lor {})", a, b),
                 Operator::Implies(a, b) => write!(f, "({} \\implies {})", a, b),
-               Operator::Not(a) => write!(f, "(\\neg {})", a),            
+               Operator::Not(a) => write!(f, "\\neg {}", a),            
             }
         }
     }
