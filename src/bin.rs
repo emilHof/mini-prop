@@ -36,20 +36,22 @@ enum Commands {
 fn run(args: Args) {
     let input = if args.file {
         read_file_line_by_line(&args.input).expect("a valid file path").lines().into_iter().map(|line| {
-            let stream = TryInto::<TokenStream>::try_into(line.expect("the input to be of parseable form")).expect("propositions to be of valid form");
-            println!("{:?}", &stream);
-            TryInto::<Proposition>::try_into(stream).expect("proposition to be of proper form")
+            TryInto::<Proposition>::try_into(
+                TryInto::<TokenStream>::try_into(
+                    line.expect("the input to be of parseable form")
+                ).expect("propositions to be of valid form")
+            ).expect("proposition to be of proper form")
         }).collect::<Vec<Proposition>>()
     } else {
-        let stream = TryInto::<TokenStream>::try_into(args.input).expect("proposition to be of valid form");
-        println!("{:?}", &stream);
-        vec![TryInto::<Proposition>::try_into(stream).expect("proposition to be of proper form")]
+        vec![
+            TryInto::<Proposition>::try_into(
+                TryInto::<TokenStream>::try_into(args.input).expect("proposition to be of valid form")
+            ).expect("proposition to be of proper form")
+        ]
     };
 
     let output = match args.command {
-        Commands::Demorg => {
-            input.into_iter().map(|prop| demorg(prop).into()).collect::<Vec<String>>()
-        },
+        Commands::Demorg => input.into_iter().map(|prop| demorg(prop).into()).collect::<Vec<String>>(),
         Commands::Analyze => unimplemented!(),
         Commands::Simplify => unimplemented!(),
     };
