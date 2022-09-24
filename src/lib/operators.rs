@@ -185,7 +185,7 @@ mod test_operators {
 
     #[test]
     fn test_parsing() {
-        use stream::{Token};
+        use stream::Token;
         let stream = stream::TokenStream(vec![Token::Predicate("A".to_string()), Token::Operator(stream::Operator::And), Token::Predicate("B".to_string())]);
         let comp: Proposition = stream.try_into().ok().unwrap();
         println!("{:?}", comp)
