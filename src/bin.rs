@@ -1,17 +1,8 @@
-use std::fs;
-use std::env;
+use std::io::BufRead;
+use clap::{Parser, Subcommand};
 use mini_prop_lib::operators::Proposition;
 use mini_prop_lib::procs::demorg;
 use mini_prop_lib::stream::TokenStream;
-use mini_prop_lib::{
-    stream,
-    operators,
-};
-
-fn read_as_string(filepath: &str) -> Result<String, Box<dyn std::error::Error>> {
-    let data = fs::read_to_string(filepath)?;
-    Ok(data)
-}
 
 fn read_file_line_by_line(filepath: &str) -> Result<std::io::BufReader<std::fs::File>, Box<dyn std::error::Error>> {
     use std::fs::File;
@@ -22,58 +13,57 @@ fn read_file_line_by_line(filepath: &str) -> Result<std::io::BufReader<std::fs::
     Ok(reader)
 }
 
-#[derive(Debug)]
-enum Config {
-    CLI(String),
-    File(String),
+#[derive(Parser)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    #[clap(short, long, action)]
+    file: bool,
+    #[clap(value_parser)]
+    input: String,
+    #[clap(short, long, value_parser)]
+    output: Option<String>,
+    #[clap(subcommand)]
+    command: Commands,
 }
 
-#[derive(Debug)]
-struct ParseError;
-
-impl Config {
-    fn parse(args: Vec<String>) -> Result<Config, ParseError> {
-        if args.len() < 2 {
-            return Err(ParseError)
-        }
-
-        match args[1].as_str() {
-            "file" => {
-                if args.len() < 3 {
-                    return Err(ParseError)
-                } else {
-                    return Ok(Config::File(args[2].clone()));
-                }
-            },
-            s => return Ok(Config::CLI(s.to_string().clone())),
-        }
-    }
+#[derive(Subcommand)]
+enum Commands {
+    Demorg,
+    Analyze,
+    Simplify,
 }
 
-fn run(config: Config) {
-    match config {
-        Config::CLI(raw_prop) => {
-            let parsed_prop: Proposition = TryInto::<TokenStream>::try_into(raw_prop).expect("malformed proposition").try_into().expect("invalid proposition");
-            println!("{}", parsed_prop);
+fn run(args: Args) {
+    let input = if args.file {
+        read_file_line_by_line(&args.input).expect("a valid file path").lines().into_iter().map(|line| {
+            let stream = TryInto::<TokenStream>::try_into(line.expect("the input to be of parseable form")).expect("propositions to be of valid form");
+            println!("{:?}", &stream);
+            TryInto::<Proposition>::try_into(stream).expect("proposition to be of proper form")
+        }).collect::<Vec<Proposition>>()
+    } else {
+        let stream = TryInto::<TokenStream>::try_into(args.input).expect("proposition to be of valid form");
+        println!("{:?}", &stream);
+        vec![TryInto::<Proposition>::try_into(stream).expect("proposition to be of proper form")]
+    };
+
+    let output = match args.command {
+        Commands::Demorg => {
+            input.into_iter().map(|prop| demorg(prop).into()).collect::<Vec<String>>()
         },
-        Config::File(path) => {
-            use std::io::prelude::*;
+        Commands::Analyze => unimplemented!(),
+        Commands::Simplify => unimplemented!(),
+    };
 
-            let input = read_file_line_by_line(&path).unwrap();
-
-            for line in input.lines() {
-                let line = line.ok().unwrap();
-                let parsed_prop: Proposition = demorg(TryInto::<TokenStream>::try_into(line).expect("malformed proposition").try_into().expect("invalid proposition"));
-                println!("{}", parsed_prop);
-            }
-        }
+    if let Some(location) = args.output {
+        unimplemented!();
+    } else {
+        output.into_iter().for_each(|out| println!("{}", out));
     }
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let config = Config::parse(args).expect("invalid parameters");
-    run(config)
+    let args = Args::parse();
+    run(args);
 }
 
 #[cfg(test)]
