@@ -1,7 +1,6 @@
 use std::io::BufRead;
 use clap::{Parser, Subcommand};
 use mini_prop_lib::operators::Proposition;
-use mini_prop_lib::procs::demorg;
 use mini_prop_lib::stream::TokenStream;
 
 fn read_file_line_by_line(filepath: &str) -> Result<std::io::BufReader<std::fs::File>, Box<dyn std::error::Error>> {
@@ -51,9 +50,9 @@ fn run(args: Args) {
     };
 
     let output = match args.command {
-        Commands::Demorg => input.into_iter().map(|prop| demorg(prop).into()).collect::<Vec<String>>(),
+        Commands::Demorg => input.into_iter().map(|prop| prop.demorg().into()).collect::<Vec<String>>(),
+        Commands::Simplify => input.into_iter().map(|prop| prop.demorg().simplify().into()).collect::<Vec<String>>(),
         Commands::Analyze => unimplemented!(),
-        Commands::Simplify => unimplemented!(),
     };
 
     if let Some(location) = args.output {
@@ -71,7 +70,7 @@ fn main() {
 #[cfg(test)]
 mod test_bin {
     use super::*;
-    use mini_prop_lib::{stream, operators, procs::demorg};
+    use mini_prop_lib::{stream, operators};
 
     #[test]
     fn test_read_and_parse() {
@@ -85,7 +84,7 @@ mod test_bin {
             let stream: stream::TokenStream = line.try_into().ok().unwrap();
             println!("{:?}", stream);
             let mut prop: operators::Proposition = stream.try_into().ok().unwrap();
-            prop = demorg(prop);
+            prop = prop.demorg();
 
            println!("{:?}", prop);
         }

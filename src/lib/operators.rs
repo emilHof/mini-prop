@@ -1,6 +1,7 @@
+mod methods;
 use crate::stream;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Operator {
     And(Proposition, Proposition),
     Or(Proposition, Proposition),
@@ -11,14 +12,14 @@ pub enum Operator {
 #[derive(Debug)]
 pub struct ParseError;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Proposition {
     Condition(Condition),
     Predicate(String),
     Composition(Box<Operator>),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Condition {
     True,
     False,
@@ -154,7 +155,19 @@ impl std::fmt::Display for Proposition {
 
 impl Into<String> for Proposition {
     fn into(self) -> String {
-        format!("{}", self)
+        match self {
+            Proposition::Predicate(pred) => format!("{}", pred),
+            Proposition::Condition(cond) => match cond {
+                Condition::True => format!("T"),
+                Condition::False => format!("F"),
+            },
+            Proposition::Composition(comp) => match comp.as_ref() {
+                Operator::And(a, b) => format!("{} \\land {}", a, b),
+                Operator::Or(a, b) => format!("{} \\lor {}", a, b),
+                Operator::Implies(a, b) => format!("{} \\implies {}", a, b),
+               Operator::Not(a) => format!("\\neg {}", a),            
+            }
+        }
     }
 }
 
@@ -180,6 +193,15 @@ mod test_operators {
                     )));        
         println!("{:?}", comp);
         println!("{}", comp);
+    }
+
+    #[test]
+    fn test_parse_complex() {
+        let stream: stream::TokenStream = "A \\land \\neg (B \\lor D)".to_string().try_into().ok().unwrap();
+        let comp: Proposition = stream.try_into().unwrap();
+        println!("{:?}", &comp);
+        println!("{}", &comp);
+        println!("{}", &comp.demorg())
     }
 
 
