@@ -28,6 +28,7 @@ struct Args {
 #[derive(Subcommand)]
 enum Commands {
     Demorg,
+    Normal,
     Analyze,
     Simplify,
 }
@@ -51,7 +52,8 @@ fn run(args: Args) {
 
     let output = match args.command {
         Commands::Demorg => input.into_iter().map(|prop| prop.demorg().into()).collect::<Vec<String>>(),
-        Commands::Simplify => input.into_iter().map(|prop| prop.demorg().simplify().into()).collect::<Vec<String>>(),
+        Commands::Normal => input.into_iter().map(|prop| prop.demorg().normal().into()).collect::<Vec<String>>(),
+        Commands::Simplify => unimplemented!(), 
         Commands::Analyze => unimplemented!(),
     };
 
@@ -70,7 +72,7 @@ fn main() {
 #[cfg(test)]
 mod test_bin {
     use super::*;
-    use mini_prop_lib::{stream, operators};
+    use mini_prop_lib::{stream, operators}; 
 
     #[test]
     fn test_read_and_parse() {

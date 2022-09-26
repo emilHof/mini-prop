@@ -2,4 +2,5 @@
 \neg (A) \land B
 \neg A \land B
 \neg ((A \land \neg B) \lor (B \land (C \land \neg A)))
-(A \lor C) \land \neg (B \lor D)
+(A \lor C) \land (B \lor (D lor E))
+((A \land (B \land \neg C)) \land (\neg A \lor (B \lor D))) \land (D \lor \neg (E \land A))

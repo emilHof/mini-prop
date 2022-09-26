@@ -145,7 +145,7 @@ impl std::fmt::Display for Proposition {
             },
             Proposition::Composition(comp) => match comp.as_ref() {
                 Operator::And(a, b) => write!(f, "({} \\land {})", a, b),
-                Operator::Or(a, b) => write!(f, "({} \\lor {})", a, b),
+                Operator::Or(a, b) => write!(f, "{} \\lor {}", a, b),
                 Operator::Implies(a, b) => write!(f, "({} \\implies {})", a, b),
                Operator::Not(a) => write!(f, "\\neg {}", a),            
             }
@@ -193,15 +193,6 @@ mod test_operators {
                     )));        
         println!("{:?}", comp);
         println!("{}", comp);
-    }
-
-    #[test]
-    fn test_parse_complex() {
-        let stream: stream::TokenStream = "A \\land \\neg (B \\lor D)".to_string().try_into().ok().unwrap();
-        let comp: Proposition = stream.try_into().unwrap();
-        println!("{:?}", &comp);
-        println!("{}", &comp);
-        println!("{}", &comp.demorg())
     }
 
 

@@ -23,7 +23,7 @@ impl Proposition {
                             Proposition::Composition(Box::new(Operator::Not(a))).demorg(),
                             Proposition::Composition(Box::new(Operator::Not(b))).demorg()
                         ))),
-                        Operator::Implies(a, b) => Proposition::Composition(Box::new(Operator::And(a.demorg(), Proposition::Composition(Box::new(Operator::Not(b.demorg())))))),
+                        Operator::Implies(a, b) => Proposition::Composition(Box::new(Operator::And(a.demorg(), Proposition::Composition(Box::new(Operator::Not(b)))))),
                         Operator::Not(a) => a.demorg(),
                     }
                 }
@@ -32,7 +32,7 @@ impl Proposition {
         }
     }
 
-    pub fn simplify(self) -> Proposition {
+    pub fn normal(self) -> Proposition {
         match self {
             Proposition::Predicate(pred) => Proposition::Predicate(pred),
             Proposition::Condition(cond) => Proposition::Condition(match cond {
@@ -41,10 +41,10 @@ impl Proposition {
             }),
             Proposition::Composition(comp) => match *comp {
                 Operator::And(a, b) => {
-                    match a.simplify() {
+                    match a.normal() {
                         Proposition::Predicate(a) => {
                             let a = Proposition::Predicate(a);
-                            Proposition::Composition(match b.simplify() {
+                            Proposition::Composition(match b.normal() {
                                 Proposition::Predicate(b) => Box::new(Operator::And(a, Proposition::Predicate(b))),
                                 Proposition::Condition(cond) => Box::new(Operator::And(a, Proposition::Condition(cond))),
                                 Proposition::Composition(comp) => match *comp {
@@ -57,7 +57,7 @@ impl Proposition {
                         },
                         Proposition::Condition(a) => {
                             let a = Proposition::Condition(a);
-                            Proposition::Composition(match b.simplify() {
+                            Proposition::Composition(match b.normal() {
                                 Proposition::Predicate(b) => Box::new(Operator::And(a, Proposition::Predicate(b))),
                                 Proposition::Condition(cond) => Box::new(Operator::And(a, Proposition::Condition(cond))),
                                 Proposition::Composition(comp) => match *comp {
@@ -71,7 +71,7 @@ impl Proposition {
                         Proposition::Composition(a) => match *a {
                             Operator::And(a, c) => {
                                 let a = Proposition::Composition(Box::new(Operator::And(a, c)));
-                                Proposition::Composition(match b.simplify() {
+                                Proposition::Composition(match b.normal() {
                                     Proposition::Predicate(b) => Box::new(Operator::And(a, Proposition::Predicate(b))),
                                     Proposition::Condition(cond) => Box::new(Operator::And(a, Proposition::Condition(cond))),
                                     Proposition::Composition(comp) => match *comp {
@@ -83,43 +83,43 @@ impl Proposition {
                                 })
                             },
                             Operator::Or(a, c) => {
-                                match b.simplify() {
-                                    Proposition::Predicate(b) => Proposition::Composition(Box::new(Operator::Or(
+                                Proposition::Composition(match b.normal() {
+                                    Proposition::Predicate(b) => Box::new(Operator::Or(
                                         Proposition::Composition(Box::new(Operator::And(a, Proposition::Predicate(b.clone())))), 
                                         Proposition::Composition(Box::new(Operator::And(c, Proposition::Predicate(b.clone()))))
-                                    ))),
+                                    )),
                                     Proposition::Condition(cond) => {
                                         let b = Proposition::Condition(cond);
-                                        Proposition::Composition(Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a, b.clone()))), Proposition::Composition(Box::new(Operator::And(c, b))))))
+                                        Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a, b.clone()))), Proposition::Composition(Box::new(Operator::And(c, b)))))
                                     },
                                     Proposition::Composition(comp) => match *comp {
                                         Operator::And(b, d) => {
-                                            let b = Proposition::Composition(Box::new(Operator::And(b, d))).demorg();
-                                            let a = Proposition::Composition(Box::new(Operator::And(a, b.clone()))).demorg();
-                                            let c = Proposition::Composition(Box::new(Operator::And(c, b.clone()))).demorg();
+                                            let b = Proposition::Composition(Box::new(Operator::And(b, d))).normal();
+                                            let a = Proposition::Composition(Box::new(Operator::And(a, b.clone()))).normal();
+                                            let c = Proposition::Composition(Box::new(Operator::And(c, b.clone()))).normal();
 
-                                           Proposition::Composition(Box::new(Operator::Or(a, c))).demorg()
+                                            Box::new(Operator::Or(a, c)) 
                                         },
                                         Operator::Or(b, d) => {
-                                            let ab = Proposition::Composition(Box::new(Operator::And(a.clone(), b.clone()))).demorg();
-                                            let ad = Proposition::Composition(Box::new(Operator::And(a.clone(), d.clone()))).demorg();
-                                            let cb = Proposition::Composition(Box::new(Operator::And(c.clone(), b.clone()))).demorg();
-                                            let cd = Proposition::Composition(Box::new(Operator::And(c.clone(), d.clone()))).demorg();
+                                            let ab = Proposition::Composition(Box::new(Operator::And(a.clone(), b.clone()))).normal();
+                                            let ad = Proposition::Composition(Box::new(Operator::And(a.clone(), d.clone()))).normal();
+                                            let cb = Proposition::Composition(Box::new(Operator::And(c.clone(), b.clone()))).normal();
+                                            let cd = Proposition::Composition(Box::new(Operator::And(c.clone(), d.clone()))).normal();
 
-                                            Proposition::Composition(Box::new(Operator::Or(ab, Proposition::Composition(Box::new(Operator::Or(ad, Proposition::Composition(Box::new(Operator::Or(cb, cd))))))))).demorg()
+                                            Box::new(Operator::Or(ab, Proposition::Composition(Box::new(Operator::Or(ad, Proposition::Composition(Box::new(Operator::Or(cb, cd))))))))
                                         },
                                         Operator::Not(b) => {
-                                            let b = Proposition::Composition(Box::new(Operator::Not(b))).demorg();
+                                            let b = Proposition::Composition(Box::new(Operator::Not(b)));
 
-                                            Proposition::Composition(Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a, b.clone()))), Proposition::Composition(Box::new(Operator::And(c, b)))))).demorg()
+                                            Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a, b.clone()))), Proposition::Composition(Box::new(Operator::And(c, b)))))
                                         },
                                         Operator::Implies(_, _) => unreachable!(),
                                     }
-                                }
+                                })
                             },
                             Operator::Not(a) => {
                                 let a = Proposition::Composition(Box::new(Operator::Not(a)));
-                                Proposition::Composition(match b.simplify() {
+                                Proposition::Composition(match b.normal() {
                                     Proposition::Predicate(b) => Box::new(Operator::And(a, Proposition::Predicate(b))),
                                     Proposition::Condition(cond) => Box::new(Operator::And(a, Proposition::Condition(cond))),
                                     Proposition::Composition(comp) => match *comp {
@@ -134,9 +134,9 @@ impl Proposition {
                         },
                     }
                 },
-                Operator::Or(a, b) => Proposition::Composition(Box::new(Operator::Or(a.simplify(), b.simplify()))),
-                Operator::Implies(a, b) => Proposition::Composition(Box::new(Operator::Or(a.simplify(), Proposition::Composition(Box::new(Operator::Not(b.simplify()))).demorg().simplify()))),
-                Operator::Not(a) => Proposition::Composition(Box::new(Operator::Not(a.simplify()))),
+                Operator::Or(a, b) => Proposition::Composition(Box::new(Operator::Or(a.normal(), b.normal()))),
+                Operator::Implies(a, b) => Proposition::Composition(Box::new(Operator::Or(a.normal(), Proposition::Composition(Box::new(Operator::Not(b.normal()))).demorg()))),
+                Operator::Not(a) => Proposition::Composition(Box::new(Operator::Not(a.normal()))),
             }
         }
     }
