@@ -1,7 +1,12 @@
+mod cli;
+mod io;
+
 use std::io::BufRead;
-use clap::{Parser, Subcommand};
 use mini_prop_lib::operators::Proposition;
 use mini_prop_lib::stream::TokenStream;
+use clap::Parser;
+
+use cli::{Args, Commands};
 
 fn read_file_line_by_line(filepath: &str) -> Result<std::io::BufReader<std::fs::File>, Box<dyn std::error::Error>> {
     use std::fs::File;
@@ -10,27 +15,6 @@ fn read_file_line_by_line(filepath: &str) -> Result<std::io::BufReader<std::fs::
     let reader = BufReader::new(file);
 
     Ok(reader)
-}
-
-#[derive(Parser)]
-#[clap(author, version, about, long_about = None)]
-struct Args {
-    #[clap(short, long, action)]
-    file: bool,
-    #[clap(value_parser)]
-    input: String,
-    #[clap(short, long, value_parser)]
-    output: Option<String>,
-    #[clap(subcommand)]
-    command: Commands,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    Demorg,
-    Normal,
-    Analyze,
-    Simplify,
 }
 
 fn run(args: Args) {
