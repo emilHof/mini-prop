@@ -7,15 +7,7 @@ use mini_prop_lib::stream::TokenStream;
 use clap::Parser;
 
 use cli::{Args, Commands};
-
-fn read_file_line_by_line(filepath: &str) -> Result<std::io::BufReader<std::fs::File>, Box<dyn std::error::Error>> {
-    use std::fs::File;
-    use std::io::BufReader;
-    let file = File::open(filepath)?;
-    let reader = BufReader::new(file);
-
-    Ok(reader)
-}
+use io::read_file_line_by_line;
 
 fn run(args: Args) {
     let input = if args.file {
@@ -41,8 +33,8 @@ fn run(args: Args) {
         Commands::Analyze => unimplemented!(),
     };
 
-    if let Some(location) = args.output {
-        unimplemented!();
+    if let Some(filepath) = args.output {
+        output.into_iter().for_each(|out| io::write_to_file(out, filepath.as_str()));
     } else {
         output.into_iter().for_each(|out| println!("{}", out));
     }

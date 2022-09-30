@@ -1,0 +1,6 @@
+\neg A \lor \neg B
+\neg A \land B
+\neg A \land B
+(\neg A \land \neg B) \lor (\neg A \land \neg C) \lor (\neg A \land A) \lor (B \land \neg B) \lor (B \land \neg C) \lor (B \land A)
+(A \land B) \lor (A \land D) \lor (A \land E) \lor (C \land B) \lor (C \land D) \lor (C \land E)
+(((A \land (B \land \neg C)) \land \neg A) \land D) \lor (((A \land (B \land \neg C)) \land \neg A) \land \neg E) \lor (((A \land (B \land \neg C)) \land \neg A) \land \neg A) \lor (((A \land (B \land \neg C)) \land B) \land D) \lor (((A \land (B \land \neg C)) \land D) \land D) \lor (((A \land (B \land \neg C)) \land B) \land \neg E) \lor (((A \land (B \land \neg C)) \land B) \land \neg A) \lor (((A \land (B \land \neg C)) \land D) \land \neg E) \lor (((A \land (B \land \neg C)) \land D) \land \neg A)
