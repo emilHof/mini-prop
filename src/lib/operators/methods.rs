@@ -48,12 +48,12 @@ impl Proposition {
                                 Proposition::Predicate(b) => Box::new(Operator::And(a, Proposition::Predicate(b))),
                                 Proposition::Condition(cond) => Box::new(Operator::And(a, Proposition::Condition(cond))),
                                 Proposition::Composition(comp) => match *comp {
-                                    Operator::And(b, c) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::And(b, c))))),
-                                    Operator::Or(b, c) => Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a.clone(), b))), Proposition::Composition(Box::new(Operator::And(a, c))))),
+                                    Operator::And(b, c) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::And(b, c))).normal())),
+                                    Operator::Or(b, c) => Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a.clone(), b))), Proposition::Composition(Box::new(Operator::And(a, c))).normal())),
                                     Operator::Not(b) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::Not(b))))),
                                     Operator::Implies(_, _) => unreachable!(),
                                 }
-                            })
+                            }).normal()
                         },
                         Proposition::Condition(a) => {
                             let a = Proposition::Condition(a);
@@ -115,7 +115,7 @@ impl Proposition {
                                         },
                                         Operator::Implies(_, _) => unreachable!(),
                                     }
-                                })
+                                }).normal()
                             },
                             Operator::Not(a) => {
                                 let a = Proposition::Composition(Box::new(Operator::Not(a)));
