@@ -9,6 +9,49 @@ pub enum Operator {
     Not(Proposition),
 }
 
+impl Proposition {
+    pub fn new_and<A: Into<Proposition>, B: Into<Proposition>>(a: A, b: B) -> Proposition {
+        Proposition::Composition(Box::new(Operator::And(a.into(), b.into())))
+    }
+
+    pub fn new_or<A: Into<Proposition>, B: Into<Proposition>>(a: A, b: B) -> Proposition {
+        Proposition::Composition(Box::new(Operator::Or(a.into(), b.into())))
+    }
+
+    pub fn new_not<A: Into<Proposition>>(a: A) -> Proposition {
+        Proposition::Composition(Box::new(Operator::Not(a.into())))
+    }
+
+    pub fn new_implies<A: Into<Proposition>, B: Into<Proposition>>(a: A, b: B) -> Proposition {
+        Proposition::Composition(Box::new(Operator::Implies(a.into(), b.into())))
+    }
+
+    pub fn new_pred<A: Into<String>>(a: A) -> Proposition {
+        Proposition::Predicate(a.into())
+    }
+
+    pub fn new_true() -> Proposition {
+        Proposition::Condition(Condition::True)
+    }
+
+    pub fn new_false() -> Proposition {
+        Proposition::Condition(Condition::False)
+    }
+}
+
+
+impl Into<Proposition> for &str {
+    fn into(self) -> Proposition {
+       Proposition::Predicate(self.into())
+    }
+} 
+
+impl Into<Proposition> for String {
+    fn into(self) -> Proposition {
+       Proposition::Predicate(self)
+    }
+} 
+
 #[derive(Debug)]
 pub struct ParseError;
 
