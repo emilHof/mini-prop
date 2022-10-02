@@ -33,7 +33,7 @@ impl Proposition {
     }
 
     pub fn normal(self) -> Proposition {
-        match self {
+        match self.demorg() {
             Proposition::Predicate(pred) => Proposition::Predicate(pred),
             Proposition::Condition(cond) => Proposition::Condition(match cond {
                 Condition::True => Condition::False,
@@ -53,7 +53,7 @@ impl Proposition {
                                     Operator::Not(b) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::Not(b))))),
                                     Operator::Implies(_, _) => unreachable!(),
                                 }
-                            }).normal()
+                            })
                         },
                         Proposition::Condition(a) => {
                             let a = Proposition::Condition(a);
@@ -167,5 +167,25 @@ mod test_procs {
                 assert_eq!(expected, actual)
             }
         );
+    }
+
+    #[test]
+    fn test_normal() {
+        let cases = vec![
+            (
+                Proposition::new_and("A", Proposition::new_or("B", Proposition::new_not("C"))),
+                Proposition::new_or(Proposition::new_and("A", "B"), Proposition::new_and("A", Proposition::new_not("C")))
+            ),
+            (
+                Proposition::new_and("A", Proposition::new_or("B", Proposition::new_not(Proposition::new_and("C", "D")))),
+                Proposition::new_or(Proposition::new_and("A", "B"), Proposition::new_or(Proposition::new_and("A", Proposition::new_not("C")), Proposition::new_and("A", Proposition::new_not("D")))),
+            )
+        ];
+
+        cases.into_iter().for_each(|(input, expected)| {
+            let actual = input.normal();
+            println!("{}", &actual);
+            assert_eq!(actual, expected)
+        })
     }
 }
