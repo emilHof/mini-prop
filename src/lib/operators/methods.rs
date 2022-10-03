@@ -178,7 +178,20 @@ mod test_procs {
             ),
             (
                 Proposition::new_and("A", Proposition::new_or("B", Proposition::new_not(Proposition::new_and("C", "D")))),
-                Proposition::new_or(Proposition::new_and("A", "B"), Proposition::new_or(Proposition::new_and("A", Proposition::new_not("C")), Proposition::new_and("A", Proposition::new_not("D")))),
+                Proposition::new_or(Proposition::new_and("A", "B"), Proposition::new_or(
+                    Proposition::new_and(
+                        "A", 
+                        Proposition::new_not("C")
+                    ), 
+                    Proposition::new_and("A", Proposition::new_not("D"))
+                )),
+            ),
+            (
+                Proposition::new_and(Proposition::new_or("A", "C"), Proposition::new_or("B", "D")),
+                Proposition::new_or(Proposition::new_and("A", "B"), Proposition::new_or(
+                    Proposition::new_and("A", "D"), 
+                    Proposition::new_or(Proposition::new_and("C", "B"), Proposition::new_and("C", "D"))
+                ))
             )
         ];
 
