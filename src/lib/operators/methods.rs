@@ -124,7 +124,10 @@ impl Proposition {
                                     Proposition::Condition(cond) => Box::new(Operator::And(a, Proposition::Condition(cond))),
                                     Proposition::Composition(comp) => match *comp {
                                         Operator::And(b, c) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::And(b, c))))),
-                                        Operator::Or(b, c) => Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a.clone(), b))), Proposition::Composition(Box::new(Operator::And(a, c))))),
+                                        Operator::Or(b, c) => Box::new(Operator::Or(
+                                            Proposition::Composition(Box::new(Operator::And(a.clone(), b))), 
+                                            Proposition::Composition(Box::new(Operator::And(a, c)))
+                                        )),
                                         Operator::Not(b) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::Not(b))))),
                                         Operator::Implies(_, _) => unreachable!(),
                                     }
@@ -134,9 +137,9 @@ impl Proposition {
                         },
                     }
                 },
-                Operator::Or(a, b) => Proposition::Composition(Box::new(Operator::Or(a.normal(), b.normal()))),
-                Operator::Implies(a, b) => Proposition::Composition(Box::new(Operator::Or(a.normal(), Proposition::Composition(Box::new(Operator::Not(b.normal()))).demorg()))),
-                Operator::Not(a) => Proposition::Composition(Box::new(Operator::Not(a.normal()))),
+                Operator::Or(a, b) => Proposition::new_or(a.normal(), b.normal()),
+                Operator::Implies(a, b) => Proposition::new_or(a.normal(),Proposition::new_not(b.normal())),
+                Operator::Not(a) => Proposition::new_not(a.normal()),
             }
         }
     }
