@@ -72,8 +72,11 @@ impl Proposition {
                                     Proposition::Predicate(b) => Box::new(Operator::And(a, Proposition::Predicate(b))),
                                     Proposition::Condition(cond) => Box::new(Operator::And(a, Proposition::Condition(cond))),
                                     Proposition::Composition(comp) => match *comp {
-                                        Operator::And(b, c) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::And(b, c))))),
-                                        Operator::Or(b, c) => Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a.clone(), b))), Proposition::Composition(Box::new(Operator::And(a, c))))),
+                                        Operator::And(b, c) => Box::new(Operator::And(a, Proposition::new_and(b, c))),
+                                        Operator::Or(b, c) => Box::new(Operator::Or(
+                                            Proposition::new_and(a.clone(), b), 
+                                            Proposition::new_and(a, c)
+                                        )),
                                         Operator::Not(b) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::Not(b))))),
                                         Operator::Implies(_, _) => unreachable!(),
                                     }
