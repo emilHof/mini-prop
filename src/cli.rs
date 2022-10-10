@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
-pub(super) struct Args {
+pub struct Args {
     #[clap(short, long, action)]
     pub file: bool,
     #[clap(value_parser)]
@@ -14,7 +14,7 @@ pub(super) struct Args {
 }
 
 #[derive(Subcommand)]
-pub(super) enum Commands {
+pub enum Commands {
     Demorg,
     Normal,
     Analyze,
