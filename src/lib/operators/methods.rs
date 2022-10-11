@@ -68,29 +68,29 @@ impl Proposition {
                         Proposition::Composition(a) => match *a {
                             Operator::And(a, c) => {
                                 let a = Proposition::new_and(a, c);
-                                Proposition::Composition(match b.normal() {
-                                    Proposition::Predicate(b) => Box::new(Operator::And(a, Proposition::Predicate(b))),
-                                    Proposition::Condition(cond) => Box::new(Operator::And(a, Proposition::Condition(cond))),
+                                match b.normal() {
+                                    Proposition::Predicate(b) => Proposition::new_and(a, Proposition::Predicate(b)),
+                                    Proposition::Condition(cond) => Proposition::new_and(a, Proposition::Condition(cond)),
                                     Proposition::Composition(comp) => match *comp {
-                                        Operator::And(b, c) => Box::new(Operator::And(a, Proposition::new_and(b, c))),
-                                        Operator::Or(b, c) => Box::new(Operator::Or(
+                                        Operator::And(b, c) => Proposition::new_and(a, Proposition::new_and(b, c)),
+                                        Operator::Or(b, c) => Proposition::new_or(
                                             Proposition::new_and(a.clone(), b), 
                                             Proposition::new_and(a, c)
-                                        )),
-                                        Operator::Not(b) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::Not(b))))),
+                                        ),
+                                        Operator::Not(b) => Proposition::new_and(a, Proposition::new_not(b)),
                                         Operator::Implies(_, _) => unreachable!(),
                                     }
-                                })
+                                }
                             },
                             Operator::Or(a, c) => {
-                                Proposition::Composition(match b.normal() {
-                                    Proposition::Predicate(b) => Box::new(Operator::Or(
+                                match b.normal() {
+                                    Proposition::Predicate(b) => Proposition::new_or(
                                         Proposition::new_and(a, b.clone()), 
-                                        Proposition::Composition(Box::new(Operator::And(c, Proposition::Predicate(b.clone()))))
-                                    )),
+                                        Proposition::new_and(c, Proposition::Predicate(b.clone()))
+                                    ),
                                     Proposition::Condition(cond) => {
                                         let b = Proposition::Condition(cond);
-                                        Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a, b.clone()))), Proposition::Composition(Box::new(Operator::And(c, b)))))
+                                        Proposition::new_or(Proposition::new_and(a, b.clone()), Proposition::new_and(c, b))
                                     },
                                     Proposition::Composition(comp) => match *comp {
                                         Operator::And(b, d) => {
@@ -98,7 +98,7 @@ impl Proposition {
                                             let a = Proposition::new_and(a, b.clone()).normal();
                                             let c = Proposition::new_and(c, b.clone()).normal();
 
-                                            Box::new(Operator::Or(a, c)) 
+                                            Proposition::new_or(a, c) 
                                         },
                                         Operator::Or(b, d) => {
                                             let ab = Proposition::new_and(a.clone(), b.clone()).normal();
@@ -106,32 +106,32 @@ impl Proposition {
                                             let cb = Proposition::new_and(c.clone(), b.clone()).normal();
                                             let cd = Proposition::new_and(c.clone(), d.clone()).normal();
 
-                                            Box::new(Operator::Or(ab, Proposition::Composition(Box::new(Operator::Or(ad, Proposition::Composition(Box::new(Operator::Or(cb, cd))))))))
+                                            Proposition::new_or(ab, Proposition::new_or(ad, Proposition::new_or(cb, cd)))
                                         },
                                         Operator::Not(b) => {
-                                            let b = Proposition::Composition(Box::new(Operator::Not(b)));
+                                            let b = Proposition::new_not(b);
 
-                                            Box::new(Operator::Or(Proposition::Composition(Box::new(Operator::And(a, b.clone()))), Proposition::Composition(Box::new(Operator::And(c, b)))))
+                                            Proposition::new_or(Proposition::new_and(a, b.clone()), Proposition::new_and(c, b))
                                         },
                                         Operator::Implies(_, _) => unreachable!(),
                                     }
-                                }).normal()
+                                }.normal()
                             },
                             Operator::Not(a) => {
-                                let a = Proposition::Composition(Box::new(Operator::Not(a)));
-                                Proposition::Composition(match b.normal() {
-                                    Proposition::Predicate(b) => Box::new(Operator::And(a, Proposition::Predicate(b))),
-                                    Proposition::Condition(cond) => Box::new(Operator::And(a, Proposition::Condition(cond))),
+                                let a = Proposition::new_not(a);
+                                match b.normal() {
+                                    Proposition::Predicate(b) => Proposition::new_and(a, b),
+                                    Proposition::Condition(cond) => Proposition::new_and(a, Proposition::Condition(cond)),
                                     Proposition::Composition(comp) => match *comp {
-                                        Operator::And(b, c) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::And(b, c))))),
-                                        Operator::Or(b, c) => Box::new(Operator::Or(
-                                            Proposition::Composition(Box::new(Operator::And(a.clone(), b))), 
-                                            Proposition::Composition(Box::new(Operator::And(a, c)))
-                                        )),
-                                        Operator::Not(b) => Box::new(Operator::And(a, Proposition::Composition(Box::new(Operator::Not(b))))),
+                                        Operator::And(b, c) => Proposition::new_and(a, Proposition::new_and(b, c)),
+                                        Operator::Or(b, c) => Proposition::new_or(
+                                            Proposition::new_and(a.clone(), b), 
+                                            Proposition::new_and(a, c)
+                                        ),
+                                        Operator::Not(b) => Proposition::new_and(a, Proposition::new_not(b)),
                                         Operator::Implies(_, _) => unreachable!(),
                                     }
-                                })
+                                }
                             },
                             Operator::Implies(_, _) => unreachable!(),
                         },
@@ -152,16 +152,10 @@ mod test_procs {
     #[test]
     fn test_demorg() {
         let input = vec![
-            Proposition::Composition(Box::new(Operator::Not(Proposition::Composition(Box::new(Operator::And(
-                                    Proposition::Predicate("A".into()),
-                                    Proposition::Predicate("A".into())
-            ))))))
+            Proposition::new_not(Proposition::new_or("A", "A")),
         ];
         let expected = vec![
-            Proposition::Composition(Box::new(Operator::Or(
-                        Proposition::Composition(Box::new(Operator::Not(Proposition::Predicate("A".into())))),
-                        Proposition::Composition(Box::new(Operator::Not(Proposition::Predicate("A".into()))))
-            )))
+            Proposition::new_or(Proposition::new_not("A"),Proposition::new_not("A"))
         ];
 
         input.into_iter().zip(expected.into_iter()).for_each( |(actual, expected)| {
