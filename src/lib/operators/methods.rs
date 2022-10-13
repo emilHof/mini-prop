@@ -143,6 +143,22 @@ impl Proposition {
             }
         }
     }
+
+    pub fn simplify(self) -> Proposition {
+        // TODO match on self
+        // TODO write a helper for the And case
+        // TODO write a helper for the Or case
+        match self {
+            Proposition::Predicate(pred) => Proposition::Predicate(pred),
+            Proposition::Condition(cond) => Proposition::Condition(cond),
+            Proposition::Composition(comp) => match *comp {
+                Operator::Not(a) => Proposition::new_not(a),
+                Operator::And(a, b) => unimplemented!(),
+                Operator::Or(a, b) => unimplemented!(),
+                Operator::Implies(a, b) => unreachable!(),
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -223,5 +239,17 @@ mod test_procs {
             println!("{}", &actual);
             assert_eq!(expected, actual)
         })
+    }
+
+    #[test]
+    fn test_simplify() {
+        let cases = vec![
+            (
+                Proposition::new_and(Proposition::new_and("A", "C"), "C"),
+                Proposition::new_and("A", "C"),
+            ),
+        ];
+
+        cases.into_iter().for_each(|(input, expected)| assert_eq!(expected, input.simplify()));
     }
 }
