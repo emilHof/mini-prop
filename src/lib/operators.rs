@@ -1,12 +1,35 @@
 mod methods;
 use crate::stream;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub enum Operator {
     And(Proposition, Proposition),
     Or(Proposition, Proposition),
     Implies(Proposition, Proposition),
     Not(Proposition),
+}
+
+impl PartialEq for Operator {
+    fn eq(&self, other: &Self) -> bool {
+        match self {
+            Operator::And(a, b) => match other {
+                Operator::And(c, d) => (a.eq(c) && b.eq(d)) || (a.eq(d) && b.eq(c)),
+                _ => false,
+            },
+            Operator::Or(a, b) => match other {
+                Operator::Or(c, d) => (a.eq(c) && b.eq(d)) || (a.eq(d) && b.eq(c)),
+                _ => false,
+            },
+            Operator::Implies(a, b) => match other {
+                Operator::Implies(c, d) => a.eq(c) && b.eq(d),
+                _ => false,
+            },
+            Operator::Not(a) => match other {
+                Operator::Not(b) => a.eq(b),
+                _ => false,
+            }
+        }
+    }
 }
 
 impl Proposition {
@@ -245,5 +268,17 @@ mod test_operators {
         let stream = stream::TokenStream(vec![Token::Predicate("A".to_string()), Token::Operator(stream::Operator::And), Token::Predicate("B".to_string())]);
         let comp: Proposition = stream.try_into().ok().unwrap();
         println!("{:?}", comp)
+    }
+
+    #[test]
+    fn test_partial_eq() {
+        let cases = vec![
+            (
+                Proposition::new_or("A", Proposition::new_and("C", "B")),
+                Proposition::new_or(Proposition::new_and("B", "C"), "A"),
+            ),
+        ];
+
+        cases.into_iter().for_each(|(input, expect)| assert_eq!(expect, input));
     }
 }

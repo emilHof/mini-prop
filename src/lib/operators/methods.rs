@@ -148,9 +148,6 @@ impl Proposition {
     }
 
     pub fn simplify(self) -> Proposition {
-        // TODO match on self
-        // TODO write a helper for the And case
-        // TODO write a helper for the Or case
         match self.normal() {
             Proposition::Predicate(pred) => Proposition::Predicate(pred),
             Proposition::Condition(cond) => Proposition::Condition(cond),
@@ -304,6 +301,11 @@ mod test_procs {
                 Proposition::new_and(Proposition::new_and("A", "C"), "C"),
                 Proposition::new_and("A", "C"),
             ),
+            (
+                
+                Proposition::new_and("A", Proposition::new_not("A")),
+                Proposition::Condition(Condition::False)
+            )
         ];
 
         cases.into_iter().for_each(|(input, expected)| assert_eq!(expected, input.simplify()));
