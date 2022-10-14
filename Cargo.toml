@@ -3,10 +3,6 @@ name = "mini-prop"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-name = "mini_prop_lib"
-path = "src/lib/lib.rs"
-
 [[bin]]
 name = "mprop"
 path = "src/bin.rs"
@@ -15,3 +11,4 @@ path = "src/bin.rs"
 
 [dependencies]
 clap = { version = "3.2.22", features = ["derive"] }
+prop_tune = {path = "../prop_tune"}

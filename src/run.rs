@@ -1,6 +1,6 @@
 use std::io::BufRead;
-use mini_prop_lib::operators::Proposition;
-use mini_prop_lib::stream::TokenStream;
+use prop_tune::operators::Proposition;
+use prop_tune::stream::TokenStream;
 
 use super::cli::{Args, Commands};
 use super::io::{read_file_line_by_line, write_to_file};
@@ -39,7 +39,7 @@ pub fn run(args: Args) {
 #[cfg(test)]
 mod test_bin {
     use super::*;
-    use mini_prop_lib::{stream, operators}; 
+    use prop_tune::{stream, operators}; 
 
     #[test]
     fn test_read_and_parse() {
