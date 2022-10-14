@@ -24,8 +24,8 @@ pub fn run(args: Args) {
 
     let output = match args.command {
         Commands::Demorg => input.into_iter().map(|prop| prop.demorg().into()).collect::<Vec<String>>(),
-        Commands::Normal => input.into_iter().map(|prop| prop.demorg().normal().into()).collect::<Vec<String>>(),
-        Commands::Simplify => unimplemented!(), 
+        Commands::Normal => input.into_iter().map(|prop| prop.normal().into()).collect::<Vec<String>>(),
+        Commands::Simplify => input.into_iter().map(|prop| prop.simplify().into()).collect::<Vec<String>>() , 
         Commands::Analyze => unimplemented!(),
     };
 

@@ -1,3 +1,6 @@
+use std::ops::Index;
+use std::cmp::Ordering;
+
 use super::*;
 
 impl Proposition {
@@ -148,17 +151,70 @@ impl Proposition {
         // TODO match on self
         // TODO write a helper for the And case
         // TODO write a helper for the Or case
-        match self {
+        match self.normal() {
             Proposition::Predicate(pred) => Proposition::Predicate(pred),
             Proposition::Condition(cond) => Proposition::Condition(cond),
             Proposition::Composition(comp) => match *comp {
                 Operator::Not(a) => Proposition::new_not(a),
-                Operator::And(a, b) => unimplemented!(),
-                Operator::Or(a, b) => unimplemented!(),
-                Operator::Implies(a, b) => unreachable!(),
+                Operator::And(a, b) => {
+                    let (mut preds, mut nots) = (std::collections::HashSet::new(), std::collections::HashSet::new());
+                    match a.account_predicates(&mut preds, &mut nots) && b.account_predicates(&mut preds, &mut nots) {
+                        true => {
+                            match preds.len().cmp(&1) {
+                                Ordering::Less => Self::construct_ands(nots.into_iter().collect()),
+                                _ => match nots.len().cmp(&1) {
+                                    Ordering::Less => Self::construct_ands(preds.into_iter().collect()),
+                                    _ => Proposition::new_and(Self::construct_ands(preds.into_iter().collect()), Self::construct_ands(nots.into_iter().collect()))
+                                }
+                            }
+                        },
+                        false => Proposition::Condition(Condition::False),
+                    }
+                },
+                Operator::Or(a, b) => Proposition::new_or(a.simplify(), b.simplify()),
+                Operator::Implies(_, _) => unreachable!(),
             }
         }
     }
+
+    fn construct_ands(predicates: Vec<String>) -> Proposition {
+        let n = predicates.len() - 1;
+        match n.cmp(&1) {
+            Ordering::Less => Proposition::Predicate(predicates.get(0).expect("there to be more predicates").clone()),
+            _ => {
+                predicates.iter()
+                    .take(n).
+                    fold(
+                        Proposition::new_pred(predicates.index(n)), 
+                        |prop, pred| Proposition::new_and(pred.clone(), prop)
+                    )
+            }
+        }
+    }
+
+    fn account_predicates(&self, preds: &mut std::collections::HashSet<String>, nots: &mut std::collections::HashSet<String>) -> bool {
+        match self {
+            Proposition::Condition(cond) => match cond {
+                Condition::True => true,
+                Condition::False => false,
+            },
+            Proposition::Predicate(pred) => {
+                preds.insert(pred.clone());
+                !nots.contains(pred) 
+            },
+            Proposition::Composition(comp) => match comp.as_ref() {
+                Operator::Not(prop) => match prop {
+                    Proposition::Predicate(pred) => {
+                        nots.insert(pred.clone());
+                        !preds.contains(pred)
+                    },
+                    _ => unreachable!(),
+                },
+                Operator::And(a, b) => a.account_predicates(preds, nots) && b.account_predicates(preds, nots),
+                _ => unreachable!(),
+            }
+        }
+    } 
 }
 
 #[cfg(test)]
