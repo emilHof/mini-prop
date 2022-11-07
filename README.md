@@ -28,12 +28,12 @@ $ cp ./target/release/mini-prop /usr/bin/
 There are currently two main ways of passing propositions. One is through the terminal
 itself.
 ```bash
-$ mini-prop "A \land (B \lor C)" normal
+$ mprop "A \land (B \lor C)" normal
 ```
 
 Alternatively you can pass `mini-prop` the path to a text file containing the propositions.
 ```bash
-$ mini-prop -f ./path/to/file/props.txt normal
+$ mprop -f ./path/to/file/props.txt normal
 ```
 
 
