@@ -1,6 +1,6 @@
 [package]
 name = "mini-prop"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Emil Hofstetter <@emilHof>"]
 license-file = "LICENSE.txt"
