@@ -2,6 +2,13 @@
 name = "mini-prop"
 version = "0.1.0"
 edition = "2021"
+authors = ["Emil Hofstetter <@emilHof>"]
+license-file = "LICENSE.txt"
+description = "A lightweight CLI to parse and analyze propositional statements."
+repository = "https://github.com/emilHof/mini-prop"
+homepage = "https://github.com/emilHof/mini-prop"
+documentation = "https://github.com/emilHof/mini-prop"
+readme = "README.md"
 
 [[bin]]
 name = "mprop"
@@ -11,4 +18,4 @@ path = "src/bin.rs"
 
 [dependencies]
 clap = { version = "3.2.22", features = ["derive"] }
-prop_tune = {path = "../prop_tune"}
+prop_tune = {version = "0.1", path = "../prop_space/prop_tune"}
