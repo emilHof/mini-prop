@@ -120,7 +120,7 @@ checksum = "c0f80d65747a3e43d1596c7c5492d95d5edddaabd45a7fcdb02b95f644164966"
 
 [[package]]
 name = "mini-prop"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "prop_tune",
@@ -179,7 +179,7 @@ dependencies = [
 
 [[package]]
 name = "prop_tune"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "prop_tune_core",
  "prop_tune_macro",
@@ -187,14 +187,14 @@ dependencies = [
 
 [[package]]
 name = "prop_tune_core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "rand",
 ]
 
 [[package]]
 name = "prop_tune_macro"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "prop_tune_core",
 ]
