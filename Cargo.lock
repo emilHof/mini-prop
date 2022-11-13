@@ -120,7 +120,7 @@ checksum = "c0f80d65747a3e43d1596c7c5492d95d5edddaabd45a7fcdb02b95f644164966"
 
 [[package]]
 name = "mini-prop"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "clap",
  "prop_tune",
@@ -179,17 +179,12 @@ dependencies = [
 
 [[package]]
 name = "prop_tune"
-version = "0.1.3"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6af0270b9c8de0e7bb75399fc0c11c8462ce6fdf04e82b2d9ba777bbf89c7979"
 dependencies = [
- "prop_tune_core 0.1.3",
+ "prop_tune_core",
  "prop_tune_macro",
-]
-
-[[package]]
-name = "prop_tune_core"
-version = "0.1.3"
-dependencies = [
- "rand",
 ]
 
 [[package]]
@@ -207,7 +202,7 @@ version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "433e815b5031604eebec41ee8dd29bce269cb6c1bf22027b25a05bd8946a77bd"
 dependencies = [
- "prop_tune_core 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "prop_tune_core",
 ]
 
 [[package]]

@@ -1,4 +1,4 @@
-use prop_tune::operators::Proposition;
+use prop_tune::operators::{flip_stream, Proposition};
 use prop_tune::stream::{flip_stream, TokenStream};
 use std::io::BufRead;
 
