@@ -1,5 +1,5 @@
 use prop_tune::operators::Proposition;
-use prop_tune::stream::TokenStream;
+use prop_tune::stream::{flip_stream, TokenStream};
 use std::io::BufRead;
 
 use super::cli::{Args, Commands};
@@ -11,22 +11,24 @@ pub fn run(args: Args) {
             .expect("a valid file path")
             .lines()
             .into_iter()
+            // parse the text into a TokenStream
             .map(|line| {
-                TryInto::<Proposition>::try_into(
-                    TryInto::<TokenStream>::try_into(
-                        line.expect("the input to be of parseable form"),
-                    )
-                    .expect("propositions to be of valid form"),
-                )
-                .expect("proposition to be of proper form")
+                TryInto::<TokenStream>::try_into(line.expect("the input to be of parseable form"))
+                    .expect("propositions to be of valid form")
             })
-            .collect::<Vec<Proposition>>()
+            .collect()
     } else {
-        vec![TryInto::<Proposition>::try_into(
-            TryInto::<TokenStream>::try_into(args.input).expect("proposition to be of valid form"),
-        )
-        .expect("proposition to be of proper form")]
-    };
+        vec![TryInto::<TokenStream>::try_into(args.input).expect("proposition to be of valid form")]
+    }
+    .into_iter()
+    .map(|mut stream| {
+        if args.flip {
+            flip_stream(&mut stream);
+        }
+        stream
+    })
+    .map(|line| TryInto::<Proposition>::try_into(line).expect("proposition to be of proper form"))
+    .collect::<Vec<Proposition>>();
 
     let output = match args.command {
         Commands::Demorg => input
